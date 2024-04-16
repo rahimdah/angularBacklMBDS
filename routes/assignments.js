@@ -2,7 +2,7 @@ let Assignment = require('../model/assignment');
 let ObjectId = require('mongodb').ObjectID;
 
 // Récupérer tous les assignments (GET)
-function getAssignments(req, res){
+function getAssignmentsOld(req, res){
     Assignment.find((err, assignments) => {
         if(err){
             res.send(err)
@@ -10,6 +10,23 @@ function getAssignments(req, res){
 
         res.send(assignments);
     });
+}
+
+function getAssignments(req, res) {
+    let aggregateQuery = Assignment.aggregate();
+
+    Assignment.aggregatePaginate(
+        aggregateQuery,
+        {
+            page: parseInt(req.query.page) || 1,
+            limit: parseInt(req.query.limit) || 10,
+        }, 
+        (err, assignments) => {
+            if(err){
+                res.send(err);
+            }
+            res.send(assignments);
+        });
 }
 
 // Récupérer un assignment par son id (GET)
