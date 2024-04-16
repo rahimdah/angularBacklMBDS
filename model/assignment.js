@@ -1,8 +1,9 @@
 let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
+let ObjectId = require('mongodb').ObjectID;
 
 let AssignmentSchema = Schema({
-    id: Number,
+    _id: ObjectId,
     dateDeRendu: Date,
     nom: String,
     rendu: Boolean
