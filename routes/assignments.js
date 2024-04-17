@@ -1,7 +1,8 @@
 let Assignment = require('../model/assignment');
+let ObjectId = require('mongodb').ObjectID;
 
 // Récupérer tous les assignments (GET)
-function getAssignments(req, res){
+function getAssignmentsOld(req, res){
     Assignment.find((err, assignments) => {
         if(err){
             res.send(err)
@@ -11,20 +12,48 @@ function getAssignments(req, res){
     });
 }
 
+function getAssignments(req, res) {
+    let aggregateQuery = Assignment.aggregate();
+
+    Assignment.aggregatePaginate(
+        aggregateQuery,
+        {
+            page: parseInt(req.query.page) || 1,
+            limit: parseInt(req.query.limit) || 10,
+        }, 
+        (err, assignments) => {
+            if(err){
+                res.send(err);
+            }
+            res.send(assignments);
+        });
+}
+
 // Récupérer un assignment par son id (GET)
 function getAssignment(req, res){
-    let assignmentId = req.params.id;
+    let assignmentId = new ObjectId(req.params.id);
+    console.log("GET assignment by id : " + assignmentId)
+    // assignmentId est une string correspondant à un _id de MongoDB
+    // je veux une requête Mongoose qui renvoie l'objet ayant ce _id
+    Assignment.findById(assignmentId, (err, assignment) => {
+        if(err){
+            res.send(err)
+        }
+        res.json(assignment);
+    });
 
-    Assignment.findOne({id: assignmentId}, (err, assignment) =>{
+    /*
+    Assignment.findOne({_id:newObjectId(assignmentId)}, (err, assignment) =>{
         if(err){res.send(err)}
         res.json(assignment);
     })
+    */
 }
 
 // Ajout d'un assignment (POST)
 function postAssignment(req, res){
     let assignment = new Assignment();
-    assignment.id = req.body.id;
+    assignment._id = new ObjectId();
     assignment.nom = req.body.nom;
     assignment.dateDeRendu = req.body.dateDeRendu;
     assignment.rendu = req.body.rendu;
